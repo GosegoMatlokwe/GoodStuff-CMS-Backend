@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<section class="hero" style="background-image: url('{% static 'images/hero-bg.jpg' %}');">
+    <div class="hero-content">
+        <h2>Exquisite Dining, Delivered to You.</h2>
+        <p>From intimate private parties to grand corporate events, we bring culinary excellence to every table.</p>
+        <div class="cta-buttons">
+            <!-- THE BRIDGE -->
+            <a href="#download" class="btn-primary">Download Customer App</a>
+            <a href="/admin" class="btn-secondary">Access Management Portal</a>
+        </div>
+    </div>
+</section>
+
+<section class="services">
+    <h3>Our Services</h3>
+    <div class="service-grid">
+        <article class="card">
+            <h4>Weddings</h4>
+            <p>Unforgettable menus tailored for your special day.</p>
+        </article>
+        <article class="card">
+            <h4>Corporate</h4>
+            <p>Professional catering that impresses clients and staff alike.</p>
+        </article>
+    </div>
+</section>
+{% endblock %}

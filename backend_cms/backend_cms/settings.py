@@ -114,4 +114,32 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = 'static/'# JAZZMIN UI TWEAKS
+JAZZMIN_UI_TWEAKS = {
+    "navbar": "navbar-white navbar-light",
+    "theme": "lumen", # A clean, modern, flat theme
+    "sidebar": "sidebar-dark-primary", 
+    "sidebar_nav_child_indent": True,
+    "brand_colour": "navbar-light",
+    "brand_logo": "",
+    "button_classes": {
+        "primary": "btn-primary",
+        "secondary": "btn-secondary",
+        "info": "btn-info",
+        "warning": "btn-warning",
+        "danger": "btn-danger",
+        "success": "btn-success"
+    }
+}
+
+# JAZZMIN BRANDING
+JAZZMIN_SETTINGS = {
+    "site_title": "Good Stuff CMS",
+    "site_header": "Admin.", # Matches the top left of your image
+    "site_brand": "Admin.",
+    "welcome_sign": "Welcome to Good Stuff Catering CMS",
+    "copyright": "Wi-Fi Friends",
+    "show_ui_builder": False, # Hides the tweak menu so you don't accidentally break it during presentation
+}
+
+

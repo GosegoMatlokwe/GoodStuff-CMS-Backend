@@ -1,0 +1,35 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Good Stuff Catering</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+    <header>
+        <nav class="navbar">
+            <div class="logo">
+                <img src="{% static 'images/logo.png' %}" alt="Good Stuff Catering Logo">
+                <h1>Good Stuff</h1>
+            </div>
+            <ul class="nav-links">
+                <li><a href="{% url 'home' %}">Home</a></li>
+                <li><a href="{% url 'about' %}">About Us</a></li>
+                <li><a href="/admin" class="btn-login">Staff Login</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        {% block content %}
+        <!-- Page specific content injects here -->
+        {% endblock %}
+    </main>
+
+    <footer>
+        <p>&copy; 2026 Good Stuff Catering. All rights reserved.</p>
+    </footer>
+</body>
+</html>

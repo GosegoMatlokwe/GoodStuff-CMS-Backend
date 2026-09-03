@@ -16,7 +16,10 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
+from catering import views # Import your new views
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    path('admin/', admin.site.urls), # The Management Portal
+    path('', views.home_view, name='home'), # The Public Landing Page
+    path('about/', views.about_view, name='about'), # The About Page
 ]
