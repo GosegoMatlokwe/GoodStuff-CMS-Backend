@@ -6,7 +6,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = 'django-insecure-683mus)iqhnhb3spwg@90ukxc=gh%ok0n99%j*3^4o!yzb-yu_'
 DEBUG = True
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [ 'gosegomatlokwe.pythonanywhere.com', '127.0.0.1']
 
 INSTALLED_APPS = [
     'jazzmin',  # Must be before django.contrib.admin for theme
@@ -65,6 +65,7 @@ USE_I18N = True
 USE_TZ = True
 
 STATIC_URL = '/static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_DIRS = [BASE_DIR / 'catering' / 'static']  # for custom static files
 
 # Authentication redirects
@@ -85,4 +86,32 @@ JAZZMIN_SETTINGS = {
     "show_sidebar": True,
     "navigation_expanded": True,
     "dark_mode_theme": "darkly",
+}
+JAZZMIN_SETTINGS = {
+    "site_title": "GoodStuff",
+    "site_header": "GoodStuff Catering",
+    "site_brand": "GoodStuff",
+    "site_logo": "images/logo.png",
+    "login_logo": "images/logo.png",
+    "welcome_sign": "Welcome to the GoodStuff Management Portal",
+    "copyright": "GoodStuff Catering Ltd",
+    "show_ui_builder": False,
+}
+
+JAZZMIN_UI_TWEAKS = {
+    "navbar": "navbar-white navbar-light",
+    "theme": "default",
+    "sidebar": "sidebar-dark-success",
+    "sidebar_nav_child_indent": True,
+    "brand_colour": "navbar-white",
+    "brand_small_text": False,
+    "accent": "accent-success",
+    "button_classes": {
+        "primary": "btn-success",
+        "secondary": "btn-outline-secondary",
+        "info": "btn-success",
+        "warning": "btn-warning",
+        "danger": "btn-danger",
+        "success": "btn-success"
+    }
 }
