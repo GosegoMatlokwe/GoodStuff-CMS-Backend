@@ -7,8 +7,8 @@
 }
 
 body {
-    background-color: #f8f9fa;
-    color: #333;
+    background-color: #F7F5F0; /* Warm Grain */
+    color: #222222; /* Charcoal Onyx */
     line-height: 1.6;
 }
 
@@ -17,9 +17,9 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background-color: #ffffff;
+    background-color: #F7F5F0;
     padding: 1rem 5%;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
 }
 
 .logo {
@@ -29,7 +29,7 @@ body {
 }
 
     .logo img {
-        height: 40px;
+        height: 70px; /* Increased to show off the new logo details */
     }
 
 .nav-links {
@@ -41,31 +41,42 @@ body {
 
     .nav-links a {
         text-decoration: none;
-        color: #333;
+        color: #222222;
         font-weight: bold;
+        transition: 0.3s;
     }
 
+        .nav-links a:hover {
+            color: #354F33; /* Deep Sage */
+        }
+
 .btn-login {
-    background-color: #1a1a1a;
-    color: white !important;
+    background-color: #222222;
+    color: #F7F5F0 !important;
     padding: 8px 16px;
     border-radius: 4px;
+    transition: 0.3s;
 }
+
+    .btn-login:hover {
+        background-color: #632A3E; /* Rich Burgundy */
+    }
 
 /* Hero Section */
 .hero {
     height: 70vh;
+    background-color: #354F33; /* Deep Sage Fallback */
     background-size: cover;
     background-position: center;
     display: flex;
     align-items: center;
     justify-content: center;
     text-align: center;
-    color: white;
+    color: #F7F5F0;
 }
 
 .hero-content {
-    background: rgba(0, 0, 0, 0.6);
+    background: rgba(34, 34, 34, 0.75); /* Charcoal Onyx with transparency */
     padding: 3rem;
     border-radius: 8px;
 }
@@ -83,20 +94,33 @@ body {
 }
 
 .btn-primary {
-    background-color: #28a745;
-    color: white;
+    background-color: #354F33;
+    color: #F7F5F0;
     padding: 12px 24px;
     text-decoration: none;
     border-radius: 4px;
+    border: 2px solid #354F33;
+    transition: 0.3s;
 }
 
+    .btn-primary:hover {
+        background-color: #253824;
+    }
+
 .btn-secondary {
-    background-color: #007bff;
-    color: white;
+    background-color: transparent;
+    color: #F7F5F0;
     padding: 12px 24px;
     text-decoration: none;
     border-radius: 4px;
+    border: 2px solid #F7F5F0;
+    transition: 0.3s;
 }
+
+    .btn-secondary:hover {
+        background-color: #632A3E;
+        border-color: #632A3E;
+    }
 
 /* Services Grid */
 .services {
@@ -112,18 +136,19 @@ body {
 }
 
 .card {
-    background: white;
+    background: #ffffff;
     padding: 2rem;
     border-radius: 8px;
     box-shadow: 0 4px 6px rgba(0,0,0,0.05);
     width: 300px;
+    border-top: 4px solid #354F33;
 }
 
 /* Footer */
 footer {
     text-align: center;
     padding: 2rem;
-    background-color: #1a1a1a;
-    color: white;
+    background-color: #222222;
+    color: #F7F5F0;
     margin-top: 2rem;
 }
