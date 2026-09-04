@@ -20,24 +20,21 @@ def login_view(request):
             return redirect('dashboard')
         else:
             messages.error(request, 'Invalid username or password')
-    return render(request, 'catering/login.html')
+    return render(request, 'login.html')
 
 def logout_view(request):
     logout(request)
     return redirect('login')
 
 def public_home(request):
-    """Render the public marketing homepage."""
-    return render(request, 'catering/index.html')
+    return render(request, 'index.html')
 
 def public_about(request):
-    """Render the public about page."""
-    return render(request, 'catering/about.html')
+    return render(request, 'about.html')
 
 # ---------- Dashboard ----------
 @login_required
 def dashboard(request):
-    # Basic stats
     total_bookings = Booking.objects.count()
     pending_bookings = Booking.objects.filter(status='Pending').count()
     confirmed_bookings = Booking.objects.filter(status='Confirmed').count()
@@ -53,13 +50,13 @@ def dashboard(request):
         'total_staff': total_staff,
         'upcoming_events': upcoming_events,
     }
-    return render(request, 'catering/dashboard.html', context)
+    return render(request, 'dashboard.html', context)
 
 # ---------- Bookings ----------
 @login_required
 def booking_list(request):
     bookings = Booking.objects.all().order_by('-event_date')
-    return render(request, 'catering/booking_list.html', {'bookings': bookings})
+    return render(request, 'booking_list.html', {'bookings': bookings})
 
 @login_required
 def booking_create(request):
@@ -71,7 +68,7 @@ def booking_create(request):
             return redirect('booking_list')
     else:
         form = BookingForm()
-    return render(request, 'catering/booking_form.html', {'form': form, 'title': 'Create Booking'})
+    return render(request, 'booking_form.html', {'form': form, 'title': 'Create Booking'})
 
 @login_required
 def booking_update(request, pk):
@@ -84,7 +81,7 @@ def booking_update(request, pk):
             return redirect('booking_list')
     else:
         form = BookingForm(instance=booking)
-    return render(request, 'catering/booking_form.html', {'form': form, 'title': 'Edit Booking'})
+    return render(request, 'booking_form.html', {'form': form, 'title': 'Edit Booking'})
 
 @login_required
 def booking_delete(request, pk):
@@ -93,13 +90,13 @@ def booking_delete(request, pk):
         booking.delete()
         messages.success(request, 'Booking deleted.')
         return redirect('booking_list')
-    return render(request, 'catering/confirm_delete.html', {'object': booking, 'type': 'booking'})
+    return render(request, 'confirm_delete.html', {'object': booking, 'type': 'booking'})
 
 # ---------- Inventory ----------
 @login_required
 def inventory_list(request):
     items = Inventory.objects.all().order_by('item_name')
-    return render(request, 'catering/inventory_list.html', {'items': items})
+    return render(request, 'inventory_list.html', {'items': items})
 
 @login_required
 def inventory_update(request, pk):
@@ -112,13 +109,13 @@ def inventory_update(request, pk):
             return redirect('inventory_list')
     else:
         form = InventoryUpdateForm(instance=item)
-    return render(request, 'catering/inventory_update.html', {'form': form, 'item': item})
+    return render(request, 'inventory_update.html', {'form': form, 'item': item})
 
 # ---------- Menu ----------
 @login_required
 def menu_list(request):
     items = Menu.objects.all().order_by('item_name')
-    return render(request, 'catering/menu_list.html', {'items': items})
+    return render(request, 'menu_list.html', {'items': items})
 
 @login_required
 def menu_create(request):
@@ -130,7 +127,7 @@ def menu_create(request):
             return redirect('menu_list')
     else:
         form = MenuForm()
-    return render(request, 'catering/menu_form.html', {'form': form, 'title': 'Add Menu Item'})
+    return render(request, 'menu_form.html', {'form': form, 'title': 'Add Menu Item'})
 
 @login_required
 def menu_update(request, pk):
@@ -143,7 +140,7 @@ def menu_update(request, pk):
             return redirect('menu_list')
     else:
         form = MenuForm(instance=item)
-    return render(request, 'catering/menu_form.html', {'form': form, 'title': 'Edit Menu Item'})
+    return render(request, 'menu_form.html', {'form': form, 'title': 'Edit Menu Item'})
 
 @login_required
 def menu_delete(request, pk):
@@ -152,13 +149,13 @@ def menu_delete(request, pk):
         item.delete()
         messages.success(request, 'Menu item deleted.')
         return redirect('menu_list')
-    return render(request, 'catering/confirm_delete.html', {'object': item, 'type': 'menu item'})
+    return render(request, 'confirm_delete.html', {'object': item, 'type': 'menu item'})
 
 # ---------- Staff ----------
 @login_required
 def staff_list(request):
     staff_members = Staff.objects.all().select_related('user').order_by('user__first_name')
-    return render(request, 'catering/staff_list.html', {'staff_members': staff_members})
+    return render(request, 'staff_list.html', {'staff_members': staff_members})
 
 @login_required
 def staff_create(request):
@@ -170,7 +167,7 @@ def staff_create(request):
             return redirect('staff_list')
     else:
         form = StaffForm()
-    return render(request, 'catering/staff_form.html', {'form': form, 'title': 'Add Staff'})
+    return render(request, 'staff_form.html', {'form': form, 'title': 'Add Staff'})
 
 @login_required
 def staff_update(request, pk):
@@ -183,7 +180,7 @@ def staff_update(request, pk):
             return redirect('staff_list')
     else:
         form = StaffForm(instance=staff)
-    return render(request, 'catering/staff_form.html', {'form': form, 'title': 'Edit Staff'})
+    return render(request, 'staff_form.html', {'form': form, 'title': 'Edit Staff'})
 
 @login_required
 def staff_delete(request, pk):
@@ -192,22 +189,15 @@ def staff_delete(request, pk):
         staff.delete()
         messages.success(request, 'Staff removed.')
         return redirect('staff_list')
-    return render(request, 'catering/confirm_delete.html', {'object': staff, 'type': 'staff member'})
+    return render(request, 'confirm_delete.html', {'object': staff, 'type': 'staff member'})
 
 # ---------- Reports ----------
 @login_required
 def reports(request):
-    # Financial summary
     total_revenue = Payment.objects.aggregate(total=Sum('amount'))['total'] or 0
     total_paid_bookings = Payment.objects.count()
-    
-    # Booking trends by event type
     booking_by_type = Booking.objects.values('event_type').annotate(count=Count('id')).order_by('-count')
-    
-    # Inventory low stock
     low_stock = Inventory.objects.filter(quantity__lt=20)
-    
-    # Staff workload: bookings per staff (count assigned)
     staff_workload = Staff.objects.annotate(num_bookings=Count('booking')).order_by('-num_bookings')
     
     context = {
@@ -217,4 +207,4 @@ def reports(request):
         'low_stock': low_stock,
         'staff_workload': staff_workload,
     }
-    return render(request, 'catering/reports.html', context)
+    return render(request, 'reports.html', context)
