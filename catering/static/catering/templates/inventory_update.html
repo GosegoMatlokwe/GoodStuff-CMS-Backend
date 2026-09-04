@@ -1,0 +1,11 @@
+{% extends 'catering/base.html' %}
+{% block title %}Update Inventory{% endblock %}
+{% block content %}
+<h1 class="mt-3">Update Stock: {{ item.item_name }}</h1>
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-primary">Update</button>
+    <a href="{% url 'inventory_list' %}" class="btn btn-secondary">Cancel</a>
+</form>
+{% endblock %}

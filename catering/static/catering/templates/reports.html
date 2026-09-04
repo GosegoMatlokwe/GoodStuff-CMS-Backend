@@ -1,0 +1,62 @@
+{% extends 'catering/base.html' %}
+{% block title %}Reports{% endblock %}
+{% block content %}
+<h1 class="mt-3">Reports</h1>
+
+<div class="row mt-4">
+    <div class="col-md-6">
+        <div class="card mb-3">
+            <div class="card-header">Financial Summary</div>
+            <div class="card-body">
+                <p>Total Revenue: <strong>R{{ total_revenue|floatformat:2 }}</strong></p>
+                <p>Paid Bookings: <strong>{{ total_paid_bookings }}</strong></p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card mb-3">
+            <div class="card-header">Booking by Event Type</div>
+            <ul class="list-group list-group-flush">
+                {% for item in booking_by_type %}
+                <li class="list-group-item d-flex justify-content-between">
+                    {{ item.event_type }}
+                    <span class="badge bg-primary">{{ item.count }}</span>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+</div>
+
+<h3>Low Stock Alerts</h3>
+<table class="table table-bordered">
+    <thead>
+        <tr><th>Item</th><th>Quantity</th></tr>
+    </thead>
+    <tbody>
+        {% for item in low_stock %}
+        <tr class="table-danger">
+            <td>{{ item.item_name }}</td>
+            <td>{{ item.quantity }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="2">No low stock items.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<h3 class="mt-4">Staff Workload</h3>
+<table class="table table-bordered">
+    <thead>
+        <tr><th>Staff Name</th><th>Bookings Assigned</th></tr>
+    </thead>
+    <tbody>
+        {% for staff in staff_workload %}
+        <tr>
+            <td>{{ staff.user.get_full_name|default:staff.user.username }}</td>
+            <td>{{ staff.num_bookings }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}
