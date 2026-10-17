@@ -1,19 +1,29 @@
 {% extends 'base.html' %}
 {% block title %}Login{% endblock %}
+
 {% block content %}
+<!-- Centers the login form in the middle of the screen -->
 <div class="row justify-content-center mt-5">
     <div class="col-md-4">
         <h2 class="text-center mb-4">Sign In</h2>
+
+        <!-- Submits username and password to the server -->
         <form method="post">
             {% csrf_token %}
+
+            <!-- Username Input -->
             <div class="mb-3">
                 <label for="username" class="form-label">Username</label>
                 <input type="text" name="username" id="username" class="form-control" required>
             </div>
+
+            <!-- Password Input -->
             <div class="mb-3">
                 <label for="password" class="form-label">Password</label>
                 <input type="password" name="password" id="password" class="form-control" required>
             </div>
+
+            <!-- Login Button spanning full width -->
             <button type="submit" class="btn btn-primary w-100">Login</button>
         </form>
     </div>

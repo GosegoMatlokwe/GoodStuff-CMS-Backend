@@ -1,8 +1,17 @@
+<!-- Extends means this page inherits the layout (navbar, footer) from base.html -->
 {% extends 'base.html' %}
+
+<!-- Replaces the title block in base.html with "Staff" -->
 {% block title %}Staff{% endblock %}
+
+<!-- Replaces the main content block in base.html -->
 {% block content %}
 <h1 class="mt-3">Staff</h1>
+
+<!-- Button that links to the staff_create URL (defined in urls.py) -->
 <a href="{% url 'staff_create' %}" class="btn btn-primary mb-3">Add Staff</a>
+
+<!-- Bootstrap table with striped rows -->
 <table class="table table-striped">
     <thead>
         <tr>
@@ -13,16 +22,20 @@
         </tr>
     </thead>
     <tbody>
+        <!-- Django loop: Iterates through 'staff_members' passed from the view -->
         {% for staff in staff_members %}
         <tr>
+            <!-- Displays the user's full name, or falls back to their username if full name is empty -->
             <td>{{ staff.user.get_full_name|default:staff.user.username }}</td>
             <td>{{ staff.role }}</td>
             <td>{{ staff.availability }}</td>
             <td>
+                <!-- Links to edit or delete this specific staff member using their ID -->
                 <a href="{% url 'staff_update' staff.id %}" class="btn btn-sm btn-outline-primary">Edit</a>
                 <a href="{% url 'staff_delete' staff.id %}" class="btn btn-sm btn-outline-danger">Delete</a>
             </td>
         </tr>
+        <!-- The 'empty' tag runs if the list is blank (no staff in the database) -->
         {% empty %}
         <tr><td colspan="4">No staff members.</td></tr>
         {% endfor %}

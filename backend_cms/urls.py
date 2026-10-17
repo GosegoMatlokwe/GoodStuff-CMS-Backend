@@ -1,23 +1,15 @@
-"""
-URL configuration for backend_cms project.
-
-The `urlpatterns` list routes URLs to views. For more information please see:
-    https://docs.djangoproject.com/en/6.0/topics/http/urls/
-Examples:
-Function views
-    1. Add an import:  from my_app import views
-    2. Add a URL to urlpatterns:  path('', views.home, name='home')
-Class-based views
-    1. Add an import:  from other_app.views import Home
-    2. Add a URL to urlpatterns:  path('', Home.as_view(), name='home')
-Including another URLconf
-    1. Import the include() function: from django.urls import include, path
-    2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
-"""
+""" URL configuration for backend_cms project. """
+# Import the built-in Django admin module
 from django.contrib import admin
+# Import path for routing, and include to link to other url files
 from django.urls import path, include
 
+# This list defines the routes for your entire project
 urlpatterns = [
-    path('admin/', admin.site.urls),           # Django admin (backup)
-    path('', include('catering.urls')),        # our custom dashboard
+    # When a user goes to /admin/, send them to the Django admin interface
+    path('admin/', admin.site.urls),
+    
+    # When a user goes to the root URL (/), load the urls.py file from the 'catering' app.
+    # This means all your dashboard pages and API endpoints will be handled there.
+    path('', include('catering.urls')), 
 ]

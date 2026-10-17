@@ -1,4 +1,20 @@
+# This ignores your virtual environment folder so you don't upload thousands of Python packages to GitHub.
 venv/
+.venv/
+
+# This ignores Python's compiled cache files. They are auto-generated and unnecessary in Git.
 __pycache__/
+*.py[cod]
+
+# This ignores your local database file. You don't want to push your SQLite data.
 *.sqlite3
+db.sqlite3
+
+# This ignores Visual Studio specific settings.
 .vs/
+
+# Environment variables (where you should store secret keys like Firebase credentials).
+.env
+
+# Mac OS system files (if anyone on your team uses a Mac).
+.DS_Store

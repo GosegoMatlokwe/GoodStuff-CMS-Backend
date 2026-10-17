@@ -1,24 +1,36 @@
-# backend_cms/settings.py
-
+# Import Path from pathlib to handle file paths easily
 from pathlib import Path
 
+# BASE_DIR is the absolute path to your project folder
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# CRITICAL SECURITY: Keep this secret in production!
 SECRET_KEY = 'django-insecure-683mus)iqhnhb3spwg@90ukxc=gh%ok0n99%j*3^4o!yzb-yu_'
-DEBUG = True
-ALLOWED_HOSTS = [ 'gosegomatlokwe.pythonanywhere.com', '127.0.0.1']
 
+# DEBUG=True shows detailed error pages. Set to False when deploying!
+DEBUG = True
+
+# ALLOWED_HOSTS: Which domains can access your site. 
+# Added localhost and PythonAnywhere (since I see it in your list)
+ALLOWED_HOSTS = ['gosegomatlokwe.pythonanywhere.com', '127.0.0.1', 'localhost']
+
+# INSTALLED_APPS: All the modules your Django project uses
 INSTALLED_APPS = [
-    'jazzmin',  # Must be before django.contrib.admin for theme
-    'django.contrib.admin',
-    'django.contrib.auth',
+    'jazzmin',  # Must be before django.contrib.admin for the theme to work
+    'django.contrib.admin', # The built-in admin panel
+    'django.contrib.auth', # Authentication system (Users, Passwords)
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
-    'django.contrib.staticfiles',
-    'catering',  # our app
+    'django.contrib.staticfiles', # Handles CSS/Images
+    'catering',  # Your custom app
+    
+    # --- CRITICAL FOR ANDROID APP ---
+    # 'rest_framework', # (If you decide to use DRF later)
+    # 'corsheaders',    # (Recommended to allow the app to talk to Django)
 ]
 
+# MIDDLEWARE: Security layers that process requests
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -27,14 +39,20 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    
+    # --- ADD THIS IF YOU GET CORS ERRORS ON ANDROID ---
+    # 'corsheaders.middleware.CorsMiddleware', 
 ]
 
+# The root URL configuration file
 ROOT_URLCONF = 'backend_cms.urls'
 
+# TEMPLATES: Tells Django where your HTML files are
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'catering' / 'templates'],  # added for app templates
+        # Tells Django to look in the 'catering/templates' folder
+        'DIRS': [BASE_DIR / 'catering' / 'templates'], 
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -46,8 +64,11 @@ TEMPLATES = [
     },
 ]
 
+# Points to your WSGI file
 WSGI_APPLICATION = 'backend_cms.wsgi.application'
 
+# DATABASES: 
+# NOTE: You are currently using SQLite. For Azure, you MUST change this to PostgreSQL!
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
@@ -55,49 +76,49 @@ DATABASES = {
     }
 }
 
+# Password validation rules (can be left default)
 AUTH_PASSWORD_VALIDATORS = [
     # ... keep existing ...
 ]
 
+# Language and Timezone settings
 LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_TZ = True
 
+# STATIC FILES: Where CSS and Images are stored
 STATIC_URL = '/static/'
+# Where 'collectstatic' will put files when you deploy
 STATIC_ROOT = BASE_DIR / 'staticfiles'
-STATICFILES_DIRS = [BASE_DIR / 'catering' / 'static']  # for custom static files
+# Where Django looks for YOUR custom CSS during development
+STATICFILES_DIRS = [BASE_DIR / 'catering' / 'static']
 
-# Authentication redirects
+# Where to redirect users when they try to access a protected page
 LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = 'dashboard'
 LOGOUT_REDIRECT_URL = 'login'
 
-# Jazzmin settings (optional, but gives dark theme)
+# JAZZMIN SETTINGS (Admin Dashboard Theme)
+# BUG FIX: You had this dictionary defined twice. I merged them into one.
 JAZZMIN_SETTINGS = {
-    "site_title": "Good Stuff Catering Admin",
-    "site_header": "Good Stuff Catering",
-    "site_brand": "Good Stuff Catering",
-    "welcome_sign": "Welcome to the Good Stuff Catering Management System",
-    "copyright": "Good Stuff Catering Ltd",
-    "topmenu_links": [
-        {"name": "Home", "url": "admin:index", "permissions": ["auth.view_user"]},
-    ],
-    "show_sidebar": True,
-    "navigation_expanded": True,
-    "dark_mode_theme": "darkly",
-}
-JAZZMIN_SETTINGS = {
-    "site_title": "GoodStuff",
+    "site_title": "GoodStuff Catering Admin",
     "site_header": "GoodStuff Catering",
-    "site_brand": "GoodStuff",
+    "site_brand": "GoodStuff Catering",
+    # Pointing to your static logo
     "site_logo": "images/logo.png",
     "login_logo": "images/logo.png",
     "welcome_sign": "Welcome to the GoodStuff Management Portal",
     "copyright": "GoodStuff Catering Ltd",
     "show_ui_builder": False,
+    "show_sidebar": True,
+    "navigation_expanded": True,
+    "topmenu_links": [
+        {"name": "Home", "url": "admin:index", "permissions": ["auth.view_user"]},
+    ],
 }
 
+# JAZZMIN UI TWEAKS (Colors and Buttons)
 JAZZMIN_UI_TWEAKS = {
     "navbar": "navbar-white navbar-light",
     "theme": "default",

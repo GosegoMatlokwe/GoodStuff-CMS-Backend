@@ -1,8 +1,10 @@
 {% extends 'base.html' %}
 {% block title %}Menu{% endblock %}
+
 {% block content %}
 <h1 class="mt-3">Menu Items</h1>
 <a href="{% url 'menu_create' %}" class="btn btn-primary mb-3">Add Item</a>
+
 <table class="table table-striped">
     <thead>
         <tr>
@@ -12,11 +14,13 @@
         </tr>
     </thead>
     <tbody>
+        <!-- Loops through 'items' passed from the view -->
         {% for item in items %}
         <tr>
             <td>{{ item.item_name }}</td>
             <td>{{ item.price }}</td>
             <td>
+                <!-- Edit and Delete buttons, passing the specific item's ID in the URL -->
                 <a href="{% url 'menu_update' item.id %}" class="btn btn-sm btn-outline-primary">Edit</a>
                 <a href="{% url 'menu_delete' item.id %}" class="btn btn-sm btn-outline-danger">Delete</a>
             </td>

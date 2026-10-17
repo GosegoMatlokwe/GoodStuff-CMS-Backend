@@ -1,11 +1,25 @@
+<!-- Inherits the admin layout (navbar, sidebar) from base.html -->
 {% extends 'base.html' %}
+
+<!-- Sets the browser tab title -->
 {% block title %}Update Inventory{% endblock %}
+
 {% block content %}
+<!-- The {{ item.item_name }} pulls the name from the specific database record passed by the view -->
 <h1 class="mt-3">Update Stock: {{ item.item_name }}</h1>
+
+<!-- Form submits via POST to update the database -->
 <form method="post">
+    <!-- Django security token to prevent CSRF attacks -->
     {% csrf_token %}
+
+    <!-- Renders the form fields (which is just 'quantity' based on your InventoryUpdateForm) -->
     {{ form.as_p }}
+
+    <!-- Submit button triggers the view logic to save the new quantity -->
     <button type="submit" class="btn btn-primary">Update</button>
+
+    <!-- Cancel button goes back to the inventory list without saving -->
     <a href="{% url 'inventory_list' %}" class="btn btn-secondary">Cancel</a>
 </form>
 {% endblock %}

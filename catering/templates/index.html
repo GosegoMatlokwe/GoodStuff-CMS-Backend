@@ -1,18 +1,28 @@
+<!-- Inherits the public layout (no admin sidebar) from public_base.html -->
 {% extends 'public_base.html' %}
+
+<!-- Loads static files so we can use images -->
 {% load static %}
+
 {% block content %}
+<!-- Hero section with a background image loaded from the static folder -->
 <section class="hero" style="background-image: url('{% static 'images/hero-bg.jpg' %}');">
     <div class="hero-content">
         <h2>Exquisite Dining, Delivered to You.</h2>
         <p>From intimate private parties to grand corporate events, we bring culinary excellence to every table.</p>
+
         <div class="cta-buttons">
-            <!-- THE BRIDGE -->
+            <!-- THE BRIDGE: This links to an anchor tag (#download) further down the page -->
+            <!-- In a real deployment, this would link to the Google Play Store URL -->
             <a href="#download" class="btn-primary">Download Customer App</a>
+
+            <!-- Directs staff to the admin login page -->
             <a href="/admin" class="btn-secondary">Access Management Portal</a>
         </div>
     </div>
 </section>
 
+<!-- Services section -->
 <section class="services">
     <h3>Our Services</h3>
     <div class="service-grid">

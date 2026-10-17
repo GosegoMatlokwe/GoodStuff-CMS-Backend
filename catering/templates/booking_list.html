@@ -1,8 +1,16 @@
+<!-- Inherits the admin layout (sidebar, navbar) from base.html -->
 {% extends 'base.html' %}
+
+<!-- Sets the browser tab title -->
 {% block title %}Bookings{% endblock %}
+
 {% block content %}
 <h1 class="mt-3">Bookings</h1>
+
+<!-- Button linking to the create booking form -->
 <a href="{% url 'booking_create' %}" class="btn btn-primary mb-3">New Booking</a>
+
+<!-- Bootstrap table with striped rows and hover effects -->
 <table class="table table-striped table-hover">
     <thead>
         <tr>
@@ -16,23 +24,34 @@
         </tr>
     </thead>
     <tbody>
+        <!-- Loops through the 'bookings' list passed from the booking_list view -->
         {% for booking in bookings %}
         <tr>
+            <!-- Displays the database ID of the booking -->
             <td>{{ booking.id }}</td>
+
+            <!-- Shows the customer's full name, or falls back to their username -->
             <td>{{ booking.customer.get_full_name|default:booking.customer.username }}</td>
+
             <td>{{ booking.event_type }}</td>
             <td>{{ booking.event_date }}</td>
             <td>{{ booking.guest_count }}</td>
+
             <td>
+                <!-- Dynamic Bootstrap badge: changes color based on status string -->
+                <!-- Confirmed = green (success), Pending = yellow (warning), Other = gray (secondary) -->
                 <span class="badge bg-{% if booking.status == 'Confirmed' %}success{% elif booking.status == 'Pending' %}warning{% else %}secondary{% endif %}">
                     {{ booking.status }}
                 </span>
             </td>
+
             <td>
+                <!-- Links to edit or delete this specific booking using its ID -->
                 <a href="{% url 'booking_update' booking.id %}" class="btn btn-sm btn-outline-primary">Edit</a>
                 <a href="{% url 'booking_delete' booking.id %}" class="btn btn-sm btn-outline-danger">Delete</a>
             </td>
         </tr>
+        <!-- Runs if the database returns zero bookings -->
         {% empty %}
         <tr><td colspan="7">No bookings found.</td></tr>
         {% endfor %}

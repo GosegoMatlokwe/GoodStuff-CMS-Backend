@@ -1,3 +1,4 @@
+<!-- Loads Django's static file handling (for CSS, images, etc.) -->
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
@@ -5,25 +6,31 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Good Stuff Catering</title>
+
+    <!-- FIX: Removed the duplicate/broken CSS line.
+         This loads the style.css from your static folder properly. -->
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
-    <link rel="stylesheet" href="{% static 'catering/static/catering/css/styles.css' %}">
 </head>
 <body>
     <header>
         <nav class="navbar">
             <div class="logo">
+                <!-- Loads your logo image -->
                 <img src="{% static 'images/logo.png' %}" alt="Good Stuff Catering Logo">
                 <h1>Good Stuff</h1>
             </div>
             <ul class="nav-links">
+                <!-- Links to the home and about pages -->
                 <li><a href="{% url 'home' %}">Home</a></li>
                 <li><a href="{% url 'about' %}">About Us</a></li>
-                <li><a href="/admin" class="btn-login">Staff Login</a></li>
+                <!-- Link to the Django Admin or custom login -->
+                <li><a href="{% url 'login' %}" class="btn-login">Staff Login</a></li>
             </ul>
         </nav>
     </header>
 
     <main>
+        <!-- Any page that extends this file will inject its content here -->
         {% block content %}
         <!-- Page specific content injects here -->
         {% endblock %}

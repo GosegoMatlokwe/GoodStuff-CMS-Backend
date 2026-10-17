@@ -1,25 +1,33 @@
 {% extends 'base.html' %}
 {% block title %}Reports{% endblock %}
+
 {% block content %}
 <h1 class="mt-3">Reports</h1>
 
+<!-- Bootstrap Row to put two cards side-by-side -->
 <div class="row mt-4">
+    <!-- Left Column (Financials) takes up half the screen (col-md-6) -->
     <div class="col-md-6">
         <div class="card mb-3">
             <div class="card-header">Financial Summary</div>
             <div class="card-body">
+                <!-- Displays total revenue and formats it to 2 decimal places -->
                 <p>Total Revenue: <strong>R{{ total_revenue|floatformat:2 }}</strong></p>
                 <p>Paid Bookings: <strong>{{ total_paid_bookings }}</strong></p>
             </div>
         </div>
     </div>
+
+    <!-- Right Column (Booking Types) -->
     <div class="col-md-6">
         <div class="card mb-3">
             <div class="card-header">Booking by Event Type</div>
             <ul class="list-group list-group-flush">
+                <!-- Loops through the aggregated data from the view -->
                 {% for item in booking_by_type %}
                 <li class="list-group-item d-flex justify-content-between">
                     {{ item.event_type }}
+                    <!-- Displays the count as a blue badge -->
                     <span class="badge bg-primary">{{ item.count }}</span>
                 </li>
                 {% endfor %}
@@ -35,6 +43,7 @@
     </thead>
     <tbody>
         {% for item in low_stock %}
+        <!-- 'table-danger' makes the row red to indicate urgency -->
         <tr class="table-danger">
             <td>{{ item.item_name }}</td>
             <td>{{ item.quantity }}</td>
