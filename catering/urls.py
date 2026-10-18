@@ -40,22 +40,13 @@ urlpatterns = [
     # MOBILE APP API ROUTES (For Retrofit in Kotlin)
     # ==========================================
     # These must match the @POST and @GET tags in the Kotlin ApiService.kt exactly!
-    path('api/auth/sync/', views.api_sync_user), # Used after Google Login
-    path('api/auth/register/', views.api_register_user), # Used to save Phone & POPIA
-    path('api/menu/', views.api_get_menu), # Used by MenuDiscoveryScreen
-    path('api/bookings/', views.api_get_bookings), # Used by DashboardScreen
-    path('api/bookings/create/', views.api_create_booking), # Used by BookingScreen
-    path('api/auth/delete-account/', views.api_delete_account), # Used by SettingsScreen (POPIA)
-
-        # Mobile API Endpoints
-    path('api/auth/sync/', views.api_sync_user),
-    path('api/auth/register/', views.api_register_user),
-    path('api/menu/', views.api_get_menu),
-    path('api/bookings/', views.api_get_bookings),
-    path('api/bookings/create/', views.api_create_booking),
-    # NEW: Add this line
+    path('api/auth/sync/', views.api_sync_user), 
+    path('api/auth/register/', views.api_register_user), 
+    path('api/menu/', views.api_get_menu), 
+    path('api/bookings/', views.api_get_bookings), 
+    path('api/bookings/create/', views.api_create_booking), 
     path('api/bookings/<int:booking_id>/delete/', views.api_delete_booking), 
-    path('api/auth/delete-account/', views.api_delete_account),
-
+    path('api/auth/delete-account/', views.api_delete_account), 
     path('api/auth/update-profile/', views.api_update_profile),
+],
 ]
