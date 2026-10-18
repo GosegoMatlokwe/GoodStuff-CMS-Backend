@@ -417,3 +417,34 @@ def api_delete_account(request):
     except User.DoesNotExist:
         # If they were already deleted, just return a success status
         return JsonResponse({"status": "User already deleted"}, status=404)
+
+
+@csrf_exempt
+def api_delete_booking(request, booking_id):
+    # 1. Verify the user's Firebase token
+    decoded_token = verify_firebase_token(request)
+    if not decoded_token:
+        return JsonResponse({"error": "Unauthorized"}, status=401)
+         
+    if request.method == 'DELETE':
+        try:
+            # 2. Find the user in the database
+            user = User.objects.get(username=decoded_token['uid'])
+            
+            # 3. Find the specific booking that belongs to this user
+            # (We include customer=user so one user can't delete another user's booking)
+            booking = Booking.objects.get(id=booking_id, customer=user)
+            
+            # 4. Delete it
+            booking.delete()
+            return JsonResponse({"status": "success", "message": "Booking deleted successfully"})
+            
+        except Booking.DoesNotExist:
+            # If the booking ID doesn't exist or doesn't belong to this user
+            return JsonResponse({"error": "Booking not found or unauthorized"}, status=404)
+        except Exception as e:
+            print(f"🚨 DELETE ERROR: {str(e)}")
+            return JsonResponse({"error": str(e)}, status=500)
+            
+    # If they try to use a GET or POST request instead of DELETE
+    return JsonResponse({"error": "Method not allowed"}, status=405)
