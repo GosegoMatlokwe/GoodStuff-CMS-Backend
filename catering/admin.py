@@ -109,6 +109,3 @@ class StaffAdmin(admin.ModelAdmin):
     list_filter = ('role', 'availability')
     search_fields = ('user__username',)
 
-# Standard registrations for simple tables (These were commented out, so I fixed them)
-admin.site.register(CustomerProfile)
-admin.site.register(Payment)
