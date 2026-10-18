@@ -448,3 +448,30 @@ def api_delete_booking(request, booking_id):
             
     # If they try to use a GET or POST request instead of DELETE
     return JsonResponse({"error": "Method not allowed"}, status=405)
+
+@csrf_exempt
+def api_update_profile(request):
+    decoded_token = verify_firebase_token(request)
+    if not decoded_token:
+        return JsonResponse({"error": "Unauthorized"}, status=401)
+         
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            user = User.objects.get(username=decoded_token['uid'])
+            profile = user.customerprofile
+            
+            # Update Django User's First and Last Name
+            user.first_name = data.get('firstName', user.first_name)
+            user.last_name = data.get('lastName', user.last_name)
+            user.save()
+            
+            # Update Customer Profile's Phone Number
+            profile.contact_info = data.get('phoneNumber', profile.contact_info)
+            profile.save()
+            
+            return JsonResponse({"status": "success", "message": "Profile updated successfully"})
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=500)
+            
+    return JsonResponse({"error": "Method not allowed"}, status=405)

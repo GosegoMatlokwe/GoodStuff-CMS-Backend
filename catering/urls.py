@@ -56,4 +56,6 @@ urlpatterns = [
     # NEW: Add this line
     path('api/bookings/<int:booking_id>/delete/', views.api_delete_booking), 
     path('api/auth/delete-account/', views.api_delete_account),
+
+    path('api/auth/update-profile/', views.api_update_profile),
 ]
