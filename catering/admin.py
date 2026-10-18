@@ -55,10 +55,12 @@ class InventoryAdmin(admin.ModelAdmin):
             # Added "{}" and ", obj.quantity" to satisfy Django's format_html
             return format_html('<span style="color: red; font-weight: bold;">{}</span>', "⚠️ LOW BUFFER STOCK")
         return format_html('<span style="color: green; font-weight: bold;">{}</span>', "✅ Optimal")# Registers the Booking model and customizes it
+
+
 @admin.register(Booking)
 class BookingAdmin(admin.ModelAdmin):
     # Columns to show
-    list_display = ('id', 'customer', 'event_type', 'event_date', 'guest_count', 'status_badge')
+    list_display = ('id', 'customer_name', 'event_type', 'event_date', 'guest_count', 'status_badge')
     # Adds a filter sidebar on the right side
     list_filter = ('status', 'event_type', 'event_date')
     # Adds a search bar
@@ -67,21 +69,38 @@ class BookingAdmin(admin.ModelAdmin):
     filter_horizontal = ('menu_items', 'assigned_staff') 
     # Adds the CSV export tool we created above to the actions dropdown
     actions = [export_to_csv] 
+@admin.display(description='Customer')
+def customer_name(self, obj):
+        return obj.customer.get_full_name() or obj.customer.username
 
-      # UI Upgrade: Converts text status into colored CSS pills
-    @admin.display(description='Status')
-    def status_badge(self, obj):
-        if obj.status == 'Confirmed':
-            return format_html('<span style="background-color: #d4edda; color: #155724; padding: 4px 8px; border-radius: 4px;">{}</span>', obj.status)
-        elif obj.status == 'Pending':
-            return format_html('<span style="background-color: #fff3cd; color: #856404; padding: 4px 8px; border-radius: 4px;">{}</span>', obj.status)
-        else:
-            return format_html('<span style="background-color: #f8d7da; color: #721c24; padding: 4px 8px; border-radius: 4px;">{}</span>', obj.status)
+    # UI Upgrade: Converts text status into colored CSS pills
+@admin.display(description='Status')
+def status_badge(self, obj):
+    if obj.status == 'Confirmed':
+        return format_html('<span style="background-color: #d4edda; color: #155724; padding: 4px 8px; border-radius: 4px;">{}</span>', obj.status)
+    elif obj.status == 'Pending':
+        return format_html('<span style="background-color: #fff3cd; color: #856404; padding: 4px 8px; border-radius: 4px;">{}</span>', obj.status)
+    else:
+        return format_html('<span style="background-color: #f8d7da; color: #721c24; padding: 4px 8px; border-radius: 4px;">{}</span>', obj.status)
 # Registers the Menu model
 @admin.register(Menu)
 class MenuAdmin(admin.ModelAdmin):
     list_display = ('item_name', 'price')
     search_fields = ('item_name',)
+
+
+@admin.register(CustomerProfile)
+class CustomerProfileAdmin(admin.ModelAdmin):
+    # Show the name and phone number in the list
+    list_display = ('get_full_name', 'get_email', 'contact_info', 'popia_consent_timestamp')
+    
+    @admin.display(description='Full Name')
+    def get_full_name(self, obj):
+        return obj.user.get_full_name() or "No Name Provided"
+
+    @admin.display(description='Email')
+    def get_email(self, obj):
+        return obj.user.email
 
 # Registers the Staff model
 @admin.register(Staff)

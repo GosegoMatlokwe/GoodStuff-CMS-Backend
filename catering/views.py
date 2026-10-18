@@ -475,3 +475,34 @@ def api_update_profile(request):
             return JsonResponse({"error": str(e)}, status=500)
             
     return JsonResponse({"error": "Method not allowed"}, status=405)
+
+
+@csrf_exempt
+def api_sync_user(request):
+    decoded_token = verify_firebase_token(request)
+    if not decoded_token:
+        return JsonResponse({"error": "Unauthorized"}, status=401)
+    
+    uid = decoded_token.get('uid')
+    email = decoded_token.get('email', f"{uid}@placeholder.com")
+    
+    # Get the name sent from the Android app
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        full_name = data.get('name', '')
+        # Split the name into first and last
+        name_parts = full_name.split(' ', 1)
+        first_name = name_parts[0]
+        last_name = name_parts[1] if len(name_parts) > 1 else ''
+
+        # Create or update the user with their real name
+        user, created = User.objects.get_or_create(username=uid, defaults={'email': email})
+        
+        if not user.first_name and first_name:
+            user.first_name = first_name
+            user.last_name = last_name
+            user.save()
+
+    CustomerProfile.objects.get_or_create(user=user)
+    
+    return JsonResponse({"status": "success", "user_id": user.id, "created": created})
