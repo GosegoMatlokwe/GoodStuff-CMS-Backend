@@ -48,16 +48,13 @@ class InventoryAdmin(admin.ModelAdmin):
     # Allows editing the quantity directly from the list view without clicking into the item
     list_editable = ('quantity',)
 
-    # This is a custom method to display a colored warning if stock is low
-    @admin.display(description="System Status") # Sets the column header name
+    # AI/Automation: Automatically flags low buffer stock
+    @admin.display(description="System Status")
     def stock_status(self, obj):
-        # If quantity is less than 20, show a red warning
         if obj.quantity < 20:
-            return format_html('<span style="color: red; font-weight: bold;">⚠️ LOW BUFFER STOCK</span>')
-        # Otherwise, show a green success message
-        return format_html('<span style="color: green; font-weight: bold;">✅ Optimal</span>')
-
-# Registers the Booking model and customizes it
+            # Added "{}" and ", obj.quantity" to satisfy Django's format_html
+            return format_html('<span style="color: red; font-weight: bold;">{}</span>', "⚠️ LOW BUFFER STOCK")
+        return format_html('<span style="color: green; font-weight: bold;">{}</span>', "✅ Optimal")# Registers the Booking model and customizes it
 @admin.register(Booking)
 class BookingAdmin(admin.ModelAdmin):
     # Columns to show
@@ -71,7 +68,7 @@ class BookingAdmin(admin.ModelAdmin):
     # Adds the CSV export tool we created above to the actions dropdown
     actions = [export_to_csv] 
 
-    # Custom method to turn the plain text status into a colored pill/badge
+      # UI Upgrade: Converts text status into colored CSS pills
     @admin.display(description='Status')
     def status_badge(self, obj):
         if obj.status == 'Confirmed':
@@ -80,7 +77,6 @@ class BookingAdmin(admin.ModelAdmin):
             return format_html('<span style="background-color: #fff3cd; color: #856404; padding: 4px 8px; border-radius: 4px;">{}</span>', obj.status)
         else:
             return format_html('<span style="background-color: #f8d7da; color: #721c24; padding: 4px 8px; border-radius: 4px;">{}</span>', obj.status)
-
 # Registers the Menu model
 @admin.register(Menu)
 class MenuAdmin(admin.ModelAdmin):

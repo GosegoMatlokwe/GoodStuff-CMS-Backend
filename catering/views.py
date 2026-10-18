@@ -1,88 +1,92 @@
-# Import tools to send JSON responses and bypass CSRF protection (required for mobile apps)
+# Import standard python modules
+import json
+import os
+
+# Import Django tools for web views and API responses
+from django.conf import settings
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-
-# Import JSON so we can read the data sent from the Android app
-import json
-
-# Import Firebase Admin SDK to verify the tokens sent from the Android app
-import firebase_admin
-from firebase_admin import credentials, auth
-
-# Import Django shortcuts for rendering web pages and getting database objects
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
 from django.contrib import messages
-
-# Import database tools for querying data
-from django.db.models import Sum, Count, Q
+from django.db.models import Sum, Count
 from django.utils import timezone
 
-# Uncommented your models because you need them to query the database!
-from .models import Booking, Menu, Inventory, Staff, Payment, CustomerProfile
-# Import your forms for the web dashboard
+# Import your database models and forms
+from .models import CustomerProfile, Menu, Booking, Inventory, Staff, Payment
 from .forms import BookingForm, InventoryUpdateForm, MenuForm, StaffForm
 
+# Import Firebase Admin SDK
+import firebase_admin
+from firebase_admin import credentials, auth
+
 # ==========================================
-# INITIALIZE FIREBASE (Crucial for Android)
+# SAFE FIREBASE INITIALIZATION
 # ==========================================
-# This checks if Firebase is already initialized. If not, it uses your service account key.
-# YOU MUST DOWNLOAD THIS KEY FROM FIREBASE CONSOLE AND PLACE IT IN YOUR DJANGO FOLDER.
-import os
+# Build the absolute path to the JSON file inside the 'catering' folder
+cred_path = os.path.join(settings.BASE_DIR, 'catering', 'serviceAccountKey.json')
+
 if not firebase_admin._apps:
-    # Get the path to the JSON file you will download from Firebase (Service Accounts)
-    cred_path = os.path.join(os.path.dirname(__file__), 'serviceAccountKey.json')
-    # Initialize it with the credentials
-    cred = credentials.Certificate(cred_path)
-    firebase_admin.initialize_app(cred)
+    if os.path.exists(cred_path):
+        # If the file exists, load it and start Firebase
+        cred = credentials.Certificate(cred_path)
+        firebase_admin.initialize_app(cred)
+    else:
+        # If it's missing, print a warning but let the server run so you can fix it
+        print(f"\n🚨 WARNING: Firebase key NOT FOUND at {cred_path}")
+        print("🚨 App API endpoints will fail until you place it in the folder.\n")
 
 
 # ==========================================
-# WEB DASHBOARD VIEWS (For the Partner Website)
+# WEBSITE DASHBOARD VIEWS (For your laptop)
 # ==========================================
 
-# Handles the login page for the admin website
 def login_view(request):
-    # If the user is already logged in, send them to the dashboard
+    # If the user is already logged in, go straight to the dashboard
     if request.user.is_authenticated:
         return redirect('dashboard')
     # If the user submitted the login form
     if request.method == 'POST':
         username = request.POST.get('username')
         password = request.POST.get('password')
-        # Check if the username and password match a user in the database
+        # Verify the credentials against the database
         user = authenticate(request, username=username, password=password)
         if user is not None:
-            login(request, user) # Log them in
-            return redirect('dashboard') # Send to dashboard
+            login(request, user)
+            return redirect('dashboard')
         else:
             messages.error(request, 'Invalid username or password')
+    # Load the login HTML page
     return render(request, 'login.html')
 
-# Handles logging out of the website
 def logout_view(request):
+    # Log the user out and send them back to the login page
     logout(request)
     return redirect('login')
 
-# Renders the public landing page
 def public_home(request):
+    # Loads the public landing page (index.html)
     return render(request, 'index.html')
 
-# Renders the about page
 def public_about(request):
+    # Loads the about page (about.html)
     return render(request, 'about.html')
 
-# Shows the admin dashboard with stats
 @login_required
 def dashboard(request):
+    # Count total bookings, pending, and confirmed
     total_bookings = Booking.objects.count()
     pending_bookings = Booking.objects.filter(status='Pending').count()
     confirmed_bookings = Booking.objects.filter(status='Confirmed').count()
+    # Check for inventory running low (less than 20)
     low_stock_items = Inventory.objects.filter(quantity__lt=20).count()
     total_staff = Staff.objects.count()
+    # Get the next 5 upcoming events sorted by date
     upcoming_events = Booking.objects.filter(event_date__gte=timezone.now().date()).order_by('event_date')[:5]
 
+    # Pass this data to the HTML template
     context = {
         'total_bookings': total_bookings,
         'pending_bookings': pending_bookings,
@@ -93,13 +97,11 @@ def dashboard(request):
     }
     return render(request, 'dashboard.html', context)
 
-# Shows a list of all bookings
 @login_required
 def booking_list(request):
     bookings = Booking.objects.all().order_by('-event_date')
     return render(request, 'booking_list.html', {'bookings': bookings})
 
-# Create a new booking via the website
 @login_required
 def booking_create(request):
     if request.method == 'POST':
@@ -112,7 +114,6 @@ def booking_create(request):
         form = BookingForm()
     return render(request, 'booking_form.html', {'form': form, 'title': 'Create Booking'})
 
-# Update an existing booking
 @login_required
 def booking_update(request, pk):
     booking = get_object_or_404(Booking, pk=pk)
@@ -126,7 +127,6 @@ def booking_update(request, pk):
         form = BookingForm(instance=booking)
     return render(request, 'booking_form.html', {'form': form, 'title': 'Edit Booking'})
 
-# Delete a booking
 @login_required
 def booking_delete(request, pk):
     booking = get_object_or_404(Booking, pk=pk)
@@ -136,13 +136,11 @@ def booking_delete(request, pk):
         return redirect('booking_list')
     return render(request, 'confirm_delete.html', {'object': booking, 'type': 'booking'})
 
-# Inventory list
 @login_required
 def inventory_list(request):
     items = Inventory.objects.all().order_by('item_name')
     return render(request, 'inventory_list.html', {'items': items})
 
-# Update inventory
 @login_required
 def inventory_update(request, pk):
     item = get_object_or_404(Inventory, pk=pk)
@@ -156,13 +154,11 @@ def inventory_update(request, pk):
         form = InventoryUpdateForm(instance=item)
     return render(request, 'inventory_update.html', {'form': form, 'item': item})
 
-# Menu list
 @login_required
 def menu_list(request):
     items = Menu.objects.all().order_by('item_name')
     return render(request, 'menu_list.html', {'items': items})
 
-# Create menu item
 @login_required
 def menu_create(request):
     if request.method == 'POST':
@@ -175,7 +171,6 @@ def menu_create(request):
         form = MenuForm()
     return render(request, 'menu_form.html', {'form': form, 'title': 'Add Menu Item'})
 
-# Update menu item
 @login_required
 def menu_update(request, pk):
     item = get_object_or_404(Menu, pk=pk)
@@ -189,7 +184,6 @@ def menu_update(request, pk):
         form = MenuForm(instance=item)
     return render(request, 'menu_form.html', {'form': form, 'title': 'Edit Menu Item'})
 
-# Delete menu item
 @login_required
 def menu_delete(request, pk):
     item = get_object_or_404(Menu, pk=pk)
@@ -199,13 +193,11 @@ def menu_delete(request, pk):
         return redirect('menu_list')
     return render(request, 'confirm_delete.html', {'object': item, 'type': 'menu item'})
 
-# Staff list
 @login_required
 def staff_list(request):
     staff_members = Staff.objects.all().select_related('user').order_by('user__first_name')
     return render(request, 'staff_list.html', {'staff_members': staff_members})
 
-# Create staff
 @login_required
 def staff_create(request):
     if request.method == 'POST':
@@ -218,7 +210,6 @@ def staff_create(request):
         form = StaffForm()
     return render(request, 'staff_form.html', {'form': form, 'title': 'Add Staff'})
 
-# Update staff
 @login_required
 def staff_update(request, pk):
     staff = get_object_or_404(Staff, pk=pk)
@@ -232,7 +223,6 @@ def staff_update(request, pk):
         form = StaffForm(instance=staff)
     return render(request, 'staff_form.html', {'form': form, 'title': 'Edit Staff'})
 
-# Delete staff
 @login_required
 def staff_delete(request, pk):
     staff = get_object_or_404(Staff, pk=pk)
@@ -242,7 +232,6 @@ def staff_delete(request, pk):
         return redirect('staff_list')
     return render(request, 'confirm_delete.html', {'object': staff, 'type': 'staff member'})
 
-# Reports page
 @login_required
 def reports(request):
     total_revenue = Payment.objects.aggregate(total=Sum('amount'))['total'] or 0
@@ -262,103 +251,81 @@ def reports(request):
 
 
 # ==========================================
-# ---------- MOBILE APP API ENDPOINTS ------
+# MOBILE APP API ENDPOINTS (For Android)
 # ==========================================
 
-# This helper function verifies the Firebase token sent in the Authorization header
 def verify_firebase_token(request):
-    # Get the 'Authorization' header from the request
+    # Get the Authorization header from the request
     auth_header = request.headers.get('Authorization')
-    # If it doesn't exist or doesn't start with "Bearer ", reject it
     if not auth_header or not auth_header.startswith('Bearer '):
-        return None
-    # Split the string to extract just the token part
+        return None # No token provided
+    
+    # Extract just the token string
     token = auth_header.split(' ')[1]
+    
     try:
-        # Use Firebase Admin to verify the token. If valid, it returns the decoded user info.
+        # Verify the token with Firebase. If valid, returns a dictionary with user info.
         return auth.verify_id_token(token)
     except Exception:
-        # If the token is invalid or expired, return None
-        return None
+        return None # Invalid or expired token
 
-# Endpoint: /api/auth/sync/
-@csrf_exempt # Bypass CSRF protection because mobile apps don't use CSRF tokens
+@csrf_exempt # Allow mobile apps to POST without CSRF tokens
 def api_sync_user(request):
-    # Verify the user's Firebase token
     decoded_token = verify_firebase_token(request)
     if not decoded_token:
         return JsonResponse({"error": "Unauthorized"}, status=401)
     
-    # Extract the unique Firebase ID and email
+    # Get the unique Firebase ID and email
     uid = decoded_token.get('uid')
     email = decoded_token.get('email', f"{uid}@placeholder.com")
     
-    # Import Django's User model
-    from django.contrib.auth.models import User
-    # Get or create a user in the database using the Firebase UID as the username
+    # Create the user in the database if they don't exist
     user, created = User.objects.get_or_create(username=uid, defaults={'email': email})
-    # Create a customer profile for this user if it doesn't exist
     CustomerProfile.objects.get_or_create(user=user)
     
-    # Return success JSON to the Android app
     return JsonResponse({"status": "success", "user_id": user.id, "created": created})
 
-# Endpoint: /api/auth/register/
 @csrf_exempt
 def api_register_user(request):
-    # Verify the user's token
     decoded_token = verify_firebase_token(request)
     if not decoded_token:
         return JsonResponse({"error": "Unauthorized"}, status=401)
-
-    # Ensure the app is sending a POST request
+    
     if request.method == 'POST':
-        # Parse the JSON body sent from Kotlin
+        # Parse the JSON body from Kotlin
         data = json.loads(request.body)
-        from django.contrib.auth.models import User
-        # Find the user
         user = User.objects.get(username=decoded_token['uid'])
-        # Get their profile
         profile = user.customerprofile
         
-        # FIX: Android sends 'phoneNumber' and 'popiaConsent'. We need to save them.
-        # (Assuming your CustomerProfile model has a field for consent_timestamp)
+        # Save the phone number (Kotlin sends 'phoneNumber')
         profile.contact_info = data.get('phoneNumber', profile.contact_info)
         
-        # If your model has this field, uncomment it to save POPIA compliance:
-        # profile.popia_consent_timestamp = data.get('consentTimestamp')
-        
+        # Save POPIA consent timestamp if provided
+        if 'consentTimestamp' in data:
+            profile.popia_consent_timestamp = data.get('consentTimestamp')
+            
         profile.save()
         return JsonResponse({"status": "registered successfully"})
 
-# Endpoint: /api/menu/
 def api_get_menu(request):
-    # Get all menu items from the database
     items = Menu.objects.all()
-    # FIX: Android expects 'itemName', not 'name'. We map the database fields to the Kotlin DTO.
+    # Match Kotlin DTO: itemName
     data = [{
         "id": item.id, 
         "itemName": item.item_name, 
-        "price": float(item.price),
-        "category": "General", # Add category if your model has it
-        "isAvailable": True
+        "price": float(item.price)
     } for item in items]
-    # Return the JSON array to the Android app
     return JsonResponse(data, safe=False)
 
-# Endpoint: /api/bookings/
 def api_get_bookings(request):
-    # Verify token
     decoded_token = verify_firebase_token(request)
     if not decoded_token:
          return JsonResponse({"error": "Unauthorized"}, status=401)
          
-    from django.contrib.auth.models import User
-    # Find the user and filter bookings to only show theirs
     user = User.objects.get(username=decoded_token['uid'])
     bookings = Booking.objects.filter(customer=user)
     
-    # FIX: Android expects 'eventDate', 'eventType'. We map them here.
+    # Match Kotlin DTO: eventType, eventDate
     data = [{
         "id": b.id, 
         "eventType": b.event_type, 
@@ -367,45 +334,40 @@ def api_get_bookings(request):
     } for b in bookings]
     return JsonResponse(data, safe=False)
 
-# Endpoint: /api/bookings/create/
 @csrf_exempt
 def api_create_booking(request):
-    # Verify token
     decoded_token = verify_firebase_token(request)
     if not decoded_token:
          return JsonResponse({"error": "Unauthorized"}, status=401)
          
     if request.method == 'POST':
-        # Parse JSON sent from Kotlin
         data = json.loads(request.body)
-        from django.contrib.auth.models import User
         user = User.objects.get(username=decoded_token['uid'])
         
-        # FIX: Android sends 'eventType', 'eventDate', 'guestCount'. We map them to the database models.
+        # Create the booking using Kotlin's JSON keys
         booking = Booking.objects.create(
             customer=user,
-            event_type=data.get('eventType', 'App Booking'),
+            event_type=data.get('eventType', 'General Catering'),
             event_date=data.get('eventDate'), 
-            guest_count=data.get('guestCount', 10),
-            status="Pending" # Default status
+            guest_count=data.get('guestCount', 50),
+            status="Pending"
         )
-        return JsonResponse({"status": "success", "booking_id": booking.id, "eventDate": str(booking.event_date), "eventType": booking.event_type})
+        return JsonResponse({
+            "status": "success", 
+            "booking_id": booking.id,
+            "eventType": booking.event_type,
+            "eventDate": str(booking.event_date)
+        })
 
-# Endpoint: /api/auth/delete-account/
 @csrf_exempt
 def api_delete_account(request):
-    # Verify token
     decoded_token = verify_firebase_token(request)
     if not decoded_token:
          return JsonResponse({"error": "Unauthorized"}, status=401)
          
-    from django.contrib.auth.models import User
     try:
-        # Find the user
         user = User.objects.get(username=decoded_token['uid'])
-        # Delete the user from the database. 
-        # (Assuming your models have CASCADE delete set up, this deletes their profile and bookings too)
-        user.delete() 
-        return JsonResponse({"status": "Account and POPIA data deleted successfully"})
+        user.delete() # Cascades and deletes profile and bookings
+        return JsonResponse({"status": "Account and data deleted"})
     except User.DoesNotExist:
         return JsonResponse({"status": "User already deleted"}, status=404)

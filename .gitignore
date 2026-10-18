@@ -18,3 +18,5 @@ db.sqlite3
 
 # Mac OS system files (if anyone on your team uses a Mac).
 .DS_Store
+
+*serviceAccountKey*.json
