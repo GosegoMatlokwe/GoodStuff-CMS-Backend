@@ -12,7 +12,7 @@ DEBUG = True
 
 # ALLOWED_HOSTS: Which domains can access your site. 
 # Added localhost and PythonAnywhere (since I see it in your list)
-ALLOWED_HOSTS = ['gosegomatlokwe.pythonanywhere.com', '127.0.0.1', 'localhost']
+ALLOWED_HOSTS = ['gosegomatlokwe.pythonanywhere.com', '127.0.0.1', 'localhost', '192.168.1.36', '*']
 
 # INSTALLED_APPS: All the modules your Django project uses
 INSTALLED_APPS = [

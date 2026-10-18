@@ -1,8 +1,9 @@
-# Import standard python modules
+# Import standard Python modules
 import json
 import os
+from datetime import datetime
 
-# Import Django tools for web views and API responses
+# Import Django tools for web views, API responses, and database queries
 from django.conf import settings
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
@@ -18,7 +19,7 @@ from django.utils import timezone
 from .models import CustomerProfile, Menu, Booking, Inventory, Staff, Payment
 from .forms import BookingForm, InventoryUpdateForm, MenuForm, StaffForm
 
-# Import Firebase Admin SDK
+# Import Firebase Admin SDK to verify Android app tokens
 import firebase_admin
 from firebase_admin import credentials, auth
 
@@ -271,6 +272,7 @@ def verify_firebase_token(request):
 
 @csrf_exempt # Allow mobile apps to POST without CSRF tokens
 def api_sync_user(request):
+    # Verify the user's Firebase token
     decoded_token = verify_firebase_token(request)
     if not decoded_token:
         return JsonResponse({"error": "Unauthorized"}, status=401)
@@ -281,33 +283,63 @@ def api_sync_user(request):
     
     # Create the user in the database if they don't exist
     user, created = User.objects.get_or_create(username=uid, defaults={'email': email})
+    # Create a profile for the user if it doesn't exist
     CustomerProfile.objects.get_or_create(user=user)
     
+    # Return success to the Android app
     return JsonResponse({"status": "success", "user_id": user.id, "created": created})
 
 @csrf_exempt
 def api_register_user(request):
+    # Verify the user's token
     decoded_token = verify_firebase_token(request)
     if not decoded_token:
         return JsonResponse({"error": "Unauthorized"}, status=401)
     
     if request.method == 'POST':
-        # Parse the JSON body from Kotlin
-        data = json.loads(request.body)
-        user = User.objects.get(username=decoded_token['uid'])
-        profile = user.customerprofile
-        
-        # Save the phone number (Kotlin sends 'phoneNumber')
-        profile.contact_info = data.get('phoneNumber', profile.contact_info)
-        
-        # Save POPIA consent timestamp if provided
-        if 'consentTimestamp' in data:
-            profile.popia_consent_timestamp = data.get('consentTimestamp')
+        try:
+            # Parse the JSON body from Kotlin
+            data = json.loads(request.body)
             
-        profile.save()
-        return JsonResponse({"status": "registered successfully"})
+            # Find the user in the database
+            user = User.objects.get(username=decoded_token['uid'])
+            profile = user.customerprofile
+            
+            # 1. Save the phone number (Kotlin sends 'phoneNumber')
+            if 'phoneNumber' in data:
+                profile.contact_info = data.get('phoneNumber')
+            
+            # 2. Handle the POPIA Timestamp safely (Fixes the 500 Error)
+            if 'consentTimestamp' in data and data.get('consentTimestamp') is not None:
+                timestamp_ms = data.get('consentTimestamp')
+                try:
+                    # Convert milliseconds to seconds (float)
+                    timestamp_sec = float(timestamp_ms) / 1000.0
+                    # Create a datetime object from the timestamp
+                    dt_object = datetime.fromtimestamp(timestamp_sec)
+                    # Make it timezone-aware (required by Django's DateTimeField)
+                    profile.popia_consent_timestamp = timezone.make_aware(dt_object)
+                except Exception as e:
+                    print(f"Error converting timestamp: {e}")
+                    # If conversion fails, default to the current time so it doesn't crash
+                    profile.popia_consent_timestamp = timezone.now()
+            else:
+                # If no timestamp was sent, default to the current time
+                profile.popia_consent_timestamp = timezone.now()
+                
+            # Save to the database
+            profile.save()
+            
+            # Return success to the Android app
+            return JsonResponse({"status": "registered successfully"})
+
+        except Exception as e:
+            # If ANYTHING fails, print it to the VS Code terminal and send a detailed error
+            print(f"🚨 REGISTRATION ERROR: {str(e)}")
+            return JsonResponse({"error": str(e)}, status=500)
 
 def api_get_menu(request):
+    # Get all menu items from the database
     items = Menu.objects.all()
     # Match Kotlin DTO: itemName
     data = [{
@@ -315,8 +347,10 @@ def api_get_menu(request):
         "itemName": item.item_name, 
         "price": float(item.price)
     } for item in items]
+    # Return the JSON array to the Android app
     return JsonResponse(data, safe=False)
 
+@csrf_exempt
 def api_get_bookings(request):
     decoded_token = verify_firebase_token(request)
     if not decoded_token:
@@ -325,12 +359,13 @@ def api_get_bookings(request):
     user = User.objects.get(username=decoded_token['uid'])
     bookings = Booking.objects.filter(customer=user)
     
-    # Match Kotlin DTO: eventType, eventDate
     data = [{
         "id": b.id, 
         "eventType": b.event_type, 
         "eventDate": str(b.event_date),
-        "status": b.status
+        "status": b.status,
+        "guestCount": b.guest_count, # NEW
+        "totalCost": (b.guest_count * 150.0) # Simulated cost (e.g., R150 per head)
     } for b in bookings]
     return JsonResponse(data, safe=False)
 
@@ -344,30 +379,41 @@ def api_create_booking(request):
         data = json.loads(request.body)
         user = User.objects.get(username=decoded_token['uid'])
         
-        # Create the booking using Kotlin's JSON keys
-        booking = Booking.objects.create(
-            customer=user,
-            event_type=data.get('eventType', 'General Catering'),
-            event_date=data.get('eventDate'), 
-            guest_count=data.get('guestCount', 50),
-            status="Pending"
-        )
-        return JsonResponse({
-            "status": "success", 
-            "booking_id": booking.id,
-            "eventType": booking.event_type,
-            "eventDate": str(booking.event_date)
-        })
+        # FIX: Replace slashes with hyphens so Django accepts the date no matter what
+        raw_date = data.get('eventDate', '')
+        safe_date = raw_date.replace('/', '-')
+        
+        try:
+            booking = Booking.objects.create(
+                customer=user,
+                event_type=data.get('eventType', 'General Catering'),
+                event_date=safe_date,
+                guest_count=data.get('guestCount', 50),
+                status="Pending"
+            )
+            return JsonResponse({
+                "status": "success", 
+                "booking_id": booking.id,
+                "eventType": booking.event_type,
+                "eventDate": str(booking.event_date)
+            })
+        except Exception as e:
+            # If the date is still invalid (e.g., "2026-13-45"), catch it safely
+            print(f"🚨 BOOKING ERROR: {str(e)}")
+            return JsonResponse({"error": "Invalid date format."}, status=400)
 
 @csrf_exempt
 def api_delete_account(request):
+    # Verify the user's token
     decoded_token = verify_firebase_token(request)
     if not decoded_token:
          return JsonResponse({"error": "Unauthorized"}, status=401)
          
     try:
+        # Find the user and delete them (POPIA compliance)
         user = User.objects.get(username=decoded_token['uid'])
         user.delete() # Cascades and deletes profile and bookings
-        return JsonResponse({"status": "Account and data deleted"})
+        return JsonResponse({"status": "Account and POPIA data deleted"})
     except User.DoesNotExist:
+        # If they were already deleted, just return a success status
         return JsonResponse({"status": "User already deleted"}, status=404)
